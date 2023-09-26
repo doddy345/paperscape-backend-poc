@@ -4,6 +4,9 @@ import path from 'path';
 import mime from 'mime-types'
 import { colorReduce } from './pipeline/steps/colorReduce';
 import { PipelineBuilder } from './pipeline/PipelineBuilder';
+import { removeBg } from './pipeline/steps/removeBackground';
+import { despeckle } from './pipeline/steps/despeckle';
+import { clampAlpha } from './pipeline/steps/clampAlpha';
 
 const app: Application = express();
 const PORT: number = 3002;
@@ -29,16 +32,19 @@ const upload = multer({
 
 const getPipeline = () => {
     return new PipelineBuilder()
+        .withStep(removeBg)
+        .withStep(clampAlpha)
         .withStep(colorReduce)
+        .withStep(despeckle)
         .build()
 }
 
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.single('file'), async (req, res) => {
     console.log("Recieved Upload")
 
     const pipeline = getPipeline();
     const results = {
-        steps: pipeline(`${rawDirRelative}/${req.file?.filename}` || "").map(
+        steps: (await pipeline(`${rawDirRelative}/${req.file?.filename}` || "")).map(
             fullUrl => fullUrl.replace('public/', '')
         )
     };

@@ -1,5 +1,5 @@
-type PipelineStep = (rawImagePath: string) => string;
-type Pipeline = (rawImagePath: string) => string[];
+type PipelineStep = (prevImagePath: string, rawImagePath: string) => Promise<string>;
+type Pipeline = (rawImagePath: string) => Promise<string[]>;
 
 export class PipelineBuilder {
     private steps: PipelineStep[] = []
@@ -14,6 +14,12 @@ export class PipelineBuilder {
     }
 
     public build(): Pipeline {
-        return rawImagePath => this.steps.reduce<string[]>((acc, step) => [...acc, step(acc[acc.length-1])], [rawImagePath])
+        return rawImagePath => {
+            const initial = Promise.resolve([rawImagePath])
+            return this.steps.reduce<Promise<string[]>>(async (acc, step) => {
+                const a = await acc;
+                return [...a, await step(a[a.length-1], rawImagePath)]
+            }, initial)
+        }
     }
 }
