@@ -1,7 +1,7 @@
 import gm from 'gm'
 import path from 'path';
 
-const RADIUS = 2
+const RADIUS = 4
 
 const relativePath = 'public/out'
 const outDir = path.join(process.cwd(), relativePath);

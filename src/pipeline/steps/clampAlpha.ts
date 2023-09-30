@@ -7,6 +7,7 @@ const outDir = path.join(process.cwd(), relativePath);
 export const clampAlpha = async (imagePath: string, rawImagePath: string): Promise<string> => {
     const inPath = path.join(process.cwd(), imagePath)
     const relativeFilename = `clampedimg${Date.now()}.png`
+    const relativeFilenameAlpha = path.join(process.cwd(), `${relativePath}/clampedimgalpha${Date.now()}.png`);
     const bgMaskPath = path.join(process.cwd(), `${relativePath}/clampedmaskimg${Date.now()}.jpg`)
     const outPath = `${outDir}/${relativeFilename}`
     
@@ -25,11 +26,22 @@ export const clampAlpha = async (imagePath: string, rawImagePath: string): Promi
             });
     })
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         gm(rawImagePath)
-            .out("+matte")
             .compose("CopyOpacity")
             .composite(bgMaskPath)
+            .write(relativeFilenameAlpha, err => {
+                if (err) {
+                    console.log(err)
+                    reject(err)
+                }
+                resolve(relativeFilenameAlpha)
+            });
+    })
+
+    return new Promise((resolve, reject) => {
+        gm(relativeFilenameAlpha)
+            .flatten()
             .write(outPath, err => {
                 if (err) {
                     console.log(err)

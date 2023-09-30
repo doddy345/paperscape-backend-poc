@@ -8,6 +8,9 @@ import { removeBg } from './pipeline/steps/removeBackground';
 import { despeckle } from './pipeline/steps/despeckle';
 import { clampAlpha } from './pipeline/steps/clampAlpha';
 
+import { fileHash } from './pipeline/util/FileHash';
+import { saturate } from './pipeline/steps/saturate';
+
 const app: Application = express();
 const PORT: number = 3002;
 
@@ -32,8 +35,9 @@ const upload = multer({
 
 const getPipeline = () => {
     return new PipelineBuilder()
+        .withStep(saturate)
         .withStep(removeBg)
-        .withStep(clampAlpha)
+        //.withStep(clampAlpha)
         .withStep(colorReduce)
         .withStep(despeckle)
         .build()
