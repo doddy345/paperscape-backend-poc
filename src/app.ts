@@ -4,22 +4,21 @@ import path from 'path';
 import mime from 'mime-types'
 import { colorReduce } from './pipeline/steps/colorReduce';
 import { PipelineBuilder } from './pipeline/PipelineBuilder';
-import { removeBg } from './pipeline/steps/removeBackground';
+import { RemoveBackgroundStep } from './pipeline/steps/RemoveBackgroundStep';
 import { despeckle } from './pipeline/steps/despeckle';
 import { clampAlpha } from './pipeline/steps/clampAlpha';
 
 import { fileHash } from './pipeline/util/FileHash';
-import { saturate } from './pipeline/steps/saturate';
+import { SaturateStep } from './pipeline/steps/SaturateStep';
 
 const app: Application = express();
 const PORT: number = 3002;
 
-const rawDirRelative = `public/raw`
-const imagesDirectory = path.join(process.cwd(), rawDirRelative);
+const rawDirRelative = `raw`
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, `${imagesDirectory}/`)
+        cb(null, `${path.join(process.cwd(), 'public', 'raw')}`)
     },
     filename: function (req, file, cb) {
         const ext = mime.extension(file.mimetype);
@@ -35,11 +34,8 @@ const upload = multer({
 
 const getPipeline = () => {
     return new PipelineBuilder()
-        .withStep(saturate)
-        .withStep(removeBg)
-        //.withStep(clampAlpha)
-        .withStep(colorReduce)
-        .withStep(despeckle)
+        .withStep(new SaturateStep())
+        .withStep(new RemoveBackgroundStep())
         .build()
 }
 

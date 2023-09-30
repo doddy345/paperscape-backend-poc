@@ -5,6 +5,6 @@ export const fileHash = async (path: string) => {
     const fileContent = fs.readFileSync(path);
     const hashSum = crypto.createHash('sha1');
     hashSum.update(fileContent);
-    const encoded = hashSum.digest('base64');
+    const encoded = hashSum.digest('hex');
     return encoded
 }

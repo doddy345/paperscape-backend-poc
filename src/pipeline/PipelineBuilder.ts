@@ -1,24 +1,25 @@
-type PipelineStep = (prevImagePath: string, rawImagePath: string) => Promise<string>;
+import { AbstractPipelineStep } from "./steps/AbstractPipelineStep";
+
 type Pipeline = (rawImagePath: string) => Promise<string[]>;
 
 export class PipelineBuilder {
-    private steps: PipelineStep[] = []
+    private steps: AbstractPipelineStep[] = []
 
     constructor() {
         this.steps = []
     }
 
-    public withStep(step: PipelineStep): PipelineBuilder {
+    public withStep(step: AbstractPipelineStep): PipelineBuilder {
         this.steps.push(step)
         return this;
     }
 
     public build(): Pipeline {
         return rawImagePath => {
-            const initial = Promise.resolve([rawImagePath])
+            const initial = Promise.resolve([`${rawImagePath}`])
             return this.steps.reduce<Promise<string[]>>(async (acc, step) => {
                 const a = await acc;
-                return [...a, await step(a[a.length-1], rawImagePath)]
+                return [...a, await step.execute(`${a[a.length-1]}`)]
             }, initial)
         }
     }
