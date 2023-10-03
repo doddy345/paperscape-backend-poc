@@ -1,26 +1,25 @@
 import gm from 'gm'
-import { AbstractPipelineStep } from './AbstractPipelineStep';
 import { fileHash } from '../util/FileHash';
+import { AbstractPipelineStep } from './AbstractPipelineStep';
 
-type SaturateConfig = {
-    percentage: number
+type ColorRecudeConfig = {
+    colourCount: number
 }
 
-export class SaturateStep extends AbstractPipelineStep<SaturateConfig> {
-    protected getDefaultConfig(): SaturateConfig {
+export class ColorReduceStep  extends AbstractPipelineStep<ColorRecudeConfig> {
+    protected getDefaultConfig(): ColorRecudeConfig {
         return {
-            percentage: 200
+            colourCount: 4
         }
     }
 
     protected async executeImpl(rawImagePath: string): Promise<string> {
-        const filename = `saturated_${await fileHash(rawImagePath)}.png`
+        const filename = `colorReduced_${await fileHash(rawImagePath)}.png`
         const outPath = `${this.getOutputDirectory()}/${filename}`
         
         return new Promise((resolve, reject) => {
             gm(rawImagePath)
-                //.despeckle()
-                .modulate(100, this.getConfig().percentage, 100)
+                .colors(this.getConfig().colourCount)
                 .write(outPath, err => {
                     if (err) {
                         console.log(err)

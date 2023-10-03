@@ -2,14 +2,14 @@ import express, { Application, Request, Response } from 'express';
 import multer from 'multer'
 import path from 'path';
 import mime from 'mime-types'
-import { colorReduce } from './pipeline/steps/colorReduce';
 import { PipelineBuilder } from './pipeline/PipelineBuilder';
 import { RemoveBackgroundStep } from './pipeline/steps/RemoveBackgroundStep';
-import { despeckle } from './pipeline/steps/despeckle';
-import { clampAlpha } from './pipeline/steps/clampAlpha';
+import { MedianFilterStep } from './pipeline/steps/MedianFilterStep';
 
 import { fileHash } from './pipeline/util/FileHash';
 import { SaturateStep } from './pipeline/steps/SaturateStep';
+import { ClampAlphaStep } from './pipeline/steps/ClampAlphaStep';
+import { ColorReduceStep } from './pipeline/steps/ColorReduceStep';
 
 const app: Application = express();
 const PORT: number = 3002;
@@ -34,8 +34,12 @@ const upload = multer({
 
 const getPipeline = () => {
     return new PipelineBuilder()
-        .withStep(new SaturateStep())
+        .withStep(new SaturateStep({percentage: 200}))
+        .withStep(new MedianFilterStep({ radius: 2 }))
         .withStep(new RemoveBackgroundStep())
+        .withStep(new ClampAlphaStep({alphaThreshold: 50000}))
+        .withStep(new ColorReduceStep({colourCount: 4}))
+        .withStep(new MedianFilterStep({ radius: 4 }))
         .build()
 }
 

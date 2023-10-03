@@ -2,25 +2,24 @@ import gm from 'gm'
 import { AbstractPipelineStep } from './AbstractPipelineStep';
 import { fileHash } from '../util/FileHash';
 
-type SaturateConfig = {
-    percentage: number
+type MedianConfig = {
+    radius: number
 }
 
-export class SaturateStep extends AbstractPipelineStep<SaturateConfig> {
-    protected getDefaultConfig(): SaturateConfig {
+export class MedianFilterStep extends AbstractPipelineStep<MedianConfig> {
+    protected getDefaultConfig(): MedianConfig {
         return {
-            percentage: 200
+            radius: 4
         }
     }
 
     protected async executeImpl(rawImagePath: string): Promise<string> {
-        const filename = `saturated_${await fileHash(rawImagePath)}.png`
+        const filename = `median_${await fileHash(rawImagePath)}.png`
         const outPath = `${this.getOutputDirectory()}/${filename}`
         
         return new Promise((resolve, reject) => {
             gm(rawImagePath)
-                //.despeckle()
-                .modulate(100, this.getConfig().percentage, 100)
+                .median(this.getConfig().radius)
                 .write(outPath, err => {
                     if (err) {
                         console.log(err)
