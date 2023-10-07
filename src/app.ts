@@ -6,10 +6,10 @@ import { PipelineBuilder } from './pipeline/PipelineBuilder';
 import { RemoveBackgroundStep } from './pipeline/steps/RemoveBackgroundStep';
 import { MedianFilterStep } from './pipeline/steps/MedianFilterStep';
 
-import { fileHash } from './pipeline/util/FileHash';
 import { SaturateStep } from './pipeline/steps/SaturateStep';
 import { ClampAlphaStep } from './pipeline/steps/ClampAlphaStep';
 import { ColorReduceStep } from './pipeline/steps/ColorReduceStep';
+import { CleanIslandsStep } from './pipeline/steps/CleanIslands';
 
 const app: Application = express();
 const PORT: number = 3002;
@@ -46,6 +46,7 @@ const getInitialPipeline = () => {
 
 const getCleanPipeline = () => {
     return new PipelineBuilder()
+        .withStep(new CleanIslandsStep())
         .build()
 }
 
