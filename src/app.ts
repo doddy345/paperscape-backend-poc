@@ -32,21 +32,40 @@ const upload = multer({
     storage: storage
 });
 
-const getPipeline = () => {
+const getInitialPipeline = () => {
     return new PipelineBuilder()
         .withStep(new SaturateStep({percentage: 200}))
-        .withStep(new MedianFilterStep({ radius: 2 }))
-        .withStep(new RemoveBackgroundStep())
-        .withStep(new ClampAlphaStep({alphaThreshold: 50000}))
-        .withStep(new ColorReduceStep({colourCount: 4}))
         .withStep(new MedianFilterStep({ radius: 4 }))
+        .withStep(new RemoveBackgroundStep())
+        .withStep(new ClampAlphaStep({alphaThreshold: 55000}))
+        .withStep(new ColorReduceStep({colourCount: 5}))
+        .withStep(new MedianFilterStep({ radius: 2 }))
+
         .build()
 }
+
+const getCleanPipeline = () => {
+    return new PipelineBuilder()
+        .build()
+}
+
 
 app.post('/upload', upload.single('file'), async (req, res) => {
     console.log("Recieved Upload")
 
-    const pipeline = getPipeline();
+    const pipeline = getInitialPipeline();
+    const results = {
+        steps: (await pipeline(`${rawDirRelative}/${req.file?.filename}` || "")).map(
+            fullUrl => fullUrl.replace('public/', '')
+        )
+    };
+    res.send(results)
+});
+
+app.post('/clean', upload.single('file'), async (req, res) => {
+    console.log("Recieved Upload")
+
+    const pipeline = getCleanPipeline();
     const results = {
         steps: (await pipeline(`${rawDirRelative}/${req.file?.filename}` || "")).map(
             fullUrl => fullUrl.replace('public/', '')
